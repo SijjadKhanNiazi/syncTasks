@@ -1,17 +1,11 @@
 import { create } from "zustand";
 
 const useUiStore = create((set) => ({
-  selecttaskId: null,
+  selectedTaskId: null,
   filter: "all",
 
-  setSelectTaskId: (id) =>
-    set({
-      selecttaskId: id,
-    }),
-  setFilter: (newfilter) =>
-    set({
-      filter: newfilter,
-    }),
+  setSelectedTaskId: (id) => set({ selectedTaskId: id }),
+  setFilter: (newFilter) => set({ filter: newFilter }),
 }));
 
 export default useUiStore;
