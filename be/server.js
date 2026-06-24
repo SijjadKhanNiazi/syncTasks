@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const http = require("http");
-const { Socket } = require("dgram");
 const PORT = process.env.PORT || 5000;
 
 const app = express();
@@ -48,14 +47,33 @@ app.post("/api/tasks", (req, res) => {
   res.status(201).json(newTask);
 });
 
-io.on("connection", (Socket) => {
-  console.log(`A user connnected ${Socket.id}`);
+// WebSockets Connection Logic
+io.on("connection", (socket) => {
+  console.log(`A user connected: ${socket.id}`);
 
-  Socket.on("disconnect", (Socket) => {
-    console.log(`User disconnect ${Socket.id}`);
+  // ⚡ 1. NAYA LISTENER: Ab server direct client se WS message sunega
+  socket.on("add_task_via_ws", (data) => {
+    // Agar Postman se JSON bhej rahe hain to verify karein ke usme 'title' ho
+    if (data && data.title) {
+      const newTask = {
+        id: tasks.length + 1,
+        name: data.title,
+        complete: false,
+      };
+
+      tasks.push(newTask); // Array me save kiya
+
+      // ⚡ Sab ko broadcast kar diya (Frontend isey receive karega)
+      io.emit("task_created", newTask);
+      console.log(`📝 Task added via WebSocket: ${data.title}`);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`app is running ong ${PORT}`);
+  console.log(`app is running on port ${PORT}`);
 });
